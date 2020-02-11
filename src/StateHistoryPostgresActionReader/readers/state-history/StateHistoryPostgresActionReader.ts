@@ -1,42 +1,42 @@
-import { AbstractActionReader, Block, NotInitializedError } from 'demux'
-import massive from 'massive'
-import pgMonitor from 'pg-monitor'
-import { StateHistoryPostgresActionReaderOptions } from './interfaces'
-import { StateHistoryPostgresBlock } from './StateHistoryPostgresBlock'
+import { AbstractActionReader, Block, NotInitializedError } from "demux";
+import massive from "massive";
+import pgMonitor from "pg-monitor";
+import { StateHistoryPostgresActionReaderOptions } from "./interfaces";
+import { StateHistoryPostgresBlock } from "./StateHistoryPostgresBlock";
 
 export class StateHistoryPostgresActionReader extends AbstractActionReader {
-  private db: any
-  private massiveInstance: massive.Database | null = null
-  private massiveConfig: any
-  private dbSchema: string
-  private enablePgMonitor: boolean
-  private ledEndpoint: string
+    private db: any;
+    private massiveInstance: massive.Database | null = null;
+    private massiveConfig: any;
+    private dbSchema: string;
+    private enablePgMonitor: boolean;
+    private ledEndpoint: string;
 
-  constructor(options: StateHistoryPostgresActionReaderOptions) {
-    super(options)
-    this.massiveConfig = options.massiveConfig
-    this.dbSchema = options.dbSchema ? options.dbSchema : 'chain'
-    this.enablePgMonitor = !!options.enablePgMonitor
-    this.ledEndpoint = options.ledEndpoint
-  }
+    constructor(options: StateHistoryPostgresActionReaderOptions) {
+        super(options);
+        this.massiveConfig = options.massiveConfig;
+        this.dbSchema = options.dbSchema ? options.dbSchema : "chain";
+        this.enablePgMonitor = !!options.enablePgMonitor;
+        this.ledEndpoint = options.ledEndpoint;
+    }
 
-  public async getHeadBlockNumber(): Promise<number> {
-    const statusRow = await this.db.fill_status.findOne()
-    return Number(statusRow.head)
-  }
+    public async getHeadBlockNumber(): Promise<number> {
+        const statusRow = await this.db.fill_status.findOne();
+        return Number(statusRow.head);
+    }
 
-  public async getLastIrreversibleBlockNumber(): Promise<number> {
-    const statusRow = await this.db.fill_status.findOne()
-    return Number(statusRow.irreversible)
-  }
+    public async getLastIrreversibleBlockNumber(): Promise<number> {
+        const statusRow = await this.db.fill_status.findOne();
+        return Number(statusRow.irreversible);
+    }
 
-  public async getBlock(blockNumber: number): Promise<Block> {
-    const pgBlockInfo = await this.db.block_info.findOne({
-      block_num: blockNumber,
-    })
+    public async getBlock(blockNumber: number): Promise<Block> {
+        const pgBlockInfo = await this.db.block_info.findOne({
+            block_num: blockNumber
+        });
 
-    // Uses ${<var-name>} for JS substitutions and $<number> for massivejs substitutions.
-    const actionTracesQuery = `
+        // Uses ${<var-name>} for JS substitutions and $<number> for massivejs substitutions.
+        const actionTracesQuery = `
       SELECT at.act_account,
              at.act_name,
              at.act_data,
@@ -68,63 +68,85 @@ export class StateHistoryPostgresActionReader extends AbstractActionReader {
                at.block_num,
                bi.producer
       ORDER BY at.receipt_global_sequence
-    `
-    const contextFreeDataQuery = `
+    `;
+        const contextFreeDataQuery = `
       SELECT tt.partial_context_free_data, tt.id
       FROM ${this.dbSchema}.transaction_trace as tt
       WHERE tt.block_num = $1
-    `
-    if (!this.massiveInstance) {
-      throw new NotInitializedError('Massive was not initialized.')
+    `;
+        if (!this.massiveInstance) {
+            throw new NotInitializedError("Massive was not initialized.");
+        }
+
+        const pgActionTraceAuthorizationsPromise = this.massiveInstance.query(
+            actionTracesQuery,
+            [blockNumber]
+        );
+        const pgContextFreeDataPromise = this.massiveInstance.query(
+            contextFreeDataQuery,
+            [blockNumber]
+        );
+        const [
+            pgActionTraceAuthorizations,
+            pgContextFreeData
+        ] = await Promise.all([
+            pgActionTraceAuthorizationsPromise,
+            pgContextFreeDataPromise
+        ]);
+
+        const block = new StateHistoryPostgresBlock(
+            pgBlockInfo,
+            this.ledEndpoint,
+            pgActionTraceAuthorizations,
+            pgContextFreeData,
+            this.massiveInstance,
+            this.dbSchema,
+            this.log
+        );
+        await block.parseActions();
+        return {
+            blockInfo: block.blockInfo,
+            actions: block.actions
+        };
     }
 
-    const pgActionTraceAuthorizationsPromise = this.massiveInstance.query(actionTracesQuery, [blockNumber])
-    const pgContextFreeDataPromise = this.massiveInstance.query(contextFreeDataQuery, [blockNumber])
-    const [pgActionTraceAuthorizations, pgContextFreeData] = await Promise.all(
-      [pgActionTraceAuthorizationsPromise, pgContextFreeDataPromise]
-    )
+    protected async setup(): Promise<void> {
+        if (this.initialized) {
+            return;
+        }
 
-    const block = new StateHistoryPostgresBlock(
-      pgBlockInfo,
-      this.ledEndpoint,
-      pgActionTraceAuthorizations,
-      pgContextFreeData,
-      this.massiveInstance,
-      this.dbSchema,
-      this.log
-    )
-    await block.parseActions()
-    return {
-      blockInfo: block.blockInfo,
-      actions: block.actions,
+        try {
+            this.massiveInstance = await massive(this.massiveConfig);
+            if (this.enablePgMonitor) {
+                await pgMonitor.attach(this.massiveInstance.driverConfig);
+            }
+            this.db = this.massiveInstance[this.dbSchema];
+            await this.addDbIndex(
+                "action_trace",
+                "transaction_id",
+                "transaction_id_idx1"
+            );
+            await this.addDbIndex(
+                "action_trace_authorization",
+                "transaction_id",
+                "transaction_id_idx2"
+            );
+        } catch (err) {
+            throw new NotInitializedError("", err);
+        }
     }
-  }
 
-  protected async setup(): Promise<void> {
-    if (this.initialized) {
-      return
-    }
-
-    try {
-      this.massiveInstance = await massive(this.massiveConfig)
-      if (this.enablePgMonitor) {
-        await pgMonitor.attach(this.massiveInstance.driverConfig)
-      }
-      this.db = this.massiveInstance[this.dbSchema]
-      await this.addDbIndex('action_trace', 'transaction_id', 'transaction_id_idx1')
-      await this.addDbIndex('action_trace_authorization', 'transaction_id', 'transaction_id_idx2')
-    } catch (err) {
-      throw new NotInitializedError('', err)
-    }
-  }
-
-  protected async addDbIndex(tableName: string, columnName: string, indexName: string = `${columnName}_idx`) {
-    if (this.massiveInstance) {
-      await this.massiveInstance.query(`
+    protected async addDbIndex(
+        tableName: string,
+        columnName: string,
+        indexName: string = `${columnName}_idx`
+    ) {
+        if (this.massiveInstance) {
+            await this.massiveInstance.query(`
         CREATE INDEX IF NOT EXISTS ${indexName} ON ${this.dbSchema}.${tableName} (${columnName})
-      `)
-    } else {
-      throw Error('this.massiveInstance should already be set.')
+      `);
+        } else {
+            throw Error("this.massiveInstance should already be set.");
+        }
     }
-  }
 }

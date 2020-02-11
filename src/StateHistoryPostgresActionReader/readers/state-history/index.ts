@@ -1,1 +1,1 @@
-export { StateHistoryPostgresActionReader } from './StateHistoryPostgresActionReader'
+export { StateHistoryPostgresActionReader } from "./StateHistoryPostgresActionReader";

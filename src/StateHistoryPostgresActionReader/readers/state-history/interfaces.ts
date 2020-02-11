@@ -1,8 +1,9 @@
-import { ActionReaderOptions } from 'demux'
+import { ActionReaderOptions } from "demux";
 
-export interface StateHistoryPostgresActionReaderOptions extends ActionReaderOptions {
-  massiveConfig: any
-  ledEndpoint:string
-  dbSchema?: string
-  enablePgMonitor?: boolean
+export interface StateHistoryPostgresActionReaderOptions
+    extends ActionReaderOptions {
+    massiveConfig: any;
+    ledEndpoint: string;
+    dbSchema?: string;
+    enablePgMonitor?: boolean;
 }
