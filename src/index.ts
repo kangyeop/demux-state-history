@@ -15,7 +15,7 @@ const config: IOptions = {
     HASURA_GRAPHQL_ADMIN_SECRET:
         process.env.HASURA_GRAPHQL_ADMIN_SECRET || "1234",
     HASURA_GRAPHQL_ENDPOINT: "",
-    GRAPHQL_ROUTE:"",
+    GRAPHQL_ROUTE:process.env.GRAPHQL_ROUTE || "graphql",
     LEDGIS_ENDPOINT: process.env.LEDGIS_ENDPOINT || "localhost",
     DB_HOST: process.env.DB_HOST || "localhost",
     DB_PORT: process.env.DB_PORT || 5432,
@@ -25,7 +25,7 @@ const config: IOptions = {
     DB_SCHEMA: process.env.DB_SCHEMA || "chain"
 };
 
-config.HASURA_GRAPHQL_ENDPOINT = `http://${config.HASURA_GRAPHQL_HOST}:${config.HASURA_GRAPHQL_PORT}/${config.HASURA_GRAPHQL_VERSION}${config.GRAPHQL_ROUTE}`;
+config.HASURA_GRAPHQL_ENDPOINT = `http://${config.HASURA_GRAPHQL_HOST}:${config.HASURA_GRAPHQL_PORT}/${config.HASURA_GRAPHQL_VERSION}/${config.GRAPHQL_ROUTE}`;
 config.HASURA_CONFIG = {
     uri: config.HASURA_GRAPHQL_ENDPOINT,
     headers: {
@@ -51,7 +51,7 @@ Container.set([
 const actionHandler = new ObjectActionHandler([handlerVersion]);
 
 const actionReaderOpts: StateHistoryPostgresActionReaderOptions = {
-    startAtBlock: 15062447,
+    startAtBlock: 0,
     onlyIrreversible: false,
     ledEndpoint: config.LEDGIS_ENDPOINT,
     dbSchema: config.DB_SCHEMA,

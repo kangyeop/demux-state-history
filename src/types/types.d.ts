@@ -1,5 +1,5 @@
 import { IndexState, ActionReaderOptions } from "demux";
-import { PresetConfig } from "apollo-boost"
+import { PresetConfig } from "apollo-boost";
 
 export interface transferState {
     from: string;
@@ -10,11 +10,12 @@ export interface transferState {
     trxId: string;
     indexState: IndexState;
 }
-export interface StateHistoryPostgresActionReaderOptions extends ActionReaderOptions {
-    massiveConfig: any
-    ledEndpoint:string
-    dbSchema?: string
-    enablePgMonitor?: boolean
+export interface StateHistoryPostgresActionReaderOptions
+    extends ActionReaderOptions {
+    massiveConfig: any;
+    ledEndpoint: string;
+    dbSchema?: string;
+    enablePgMonitor?: boolean;
 }
 export interface StateHistoryWsActionReaderOptions extends ActionReaderOptions {
     nodeosRPCEndpoint: string;
@@ -38,3 +39,7 @@ export interface IOptions {
     DB_SCHEMA: string;
 }
 
+export interface UserIdReturn {
+    creatorId: number;
+    buyerId: number;
+}

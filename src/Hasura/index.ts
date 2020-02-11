@@ -1,5 +1,5 @@
-import ApolloClient, { PresetConfig } from "apollo-boost"
-import { Service, Inject } from "typedi"
+import ApolloClient, { PresetConfig } from "apollo-boost";
+import { Service, Inject } from "typedi";
 import "reflect-metadata";
 
 @Service()
