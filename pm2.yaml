@@ -1,0 +1,14 @@
+apps:
+    - name: "demux"
+      script: ./dist/index.js
+      instances: 0
+      exec_mode: cluster
+      autorestart: true
+      watch: false
+      max_memory_restart: "8G"
+      error_file: ".pm2/stderr.log"
+      out_file: ".pm2/stdout.log"
+      merge_logs: true
+      wait_ready: false
+      listen_timeout: 50000
+      kill_timeout: 5000
