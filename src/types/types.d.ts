@@ -38,8 +38,3 @@ export interface IOptions {
     DB_PASSWD: string;
     DB_SCHEMA: string;
 }
-
-export interface UserIdReturn {
-    creatorId: number;
-    buyerId: number;
-}
