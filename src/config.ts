@@ -20,7 +20,7 @@ export const config: IOptions = {
 };
 
 // config.HASURA_GRAPHQL_ENDPOINT = `http://${config.HASURA_GRAPHQL_HOST}:${config.HASURA_GRAPHQL_PORT}/${config.HASURA_GRAPHQL_VERSION}/${config.GRAPHQL_ROUTE}`;
-config.HASURA_GRAPHQL_ENDPOINT = "http://localhost:4000/graphql";
+config.HASURA_GRAPHQL_ENDPOINT = "http://localhost:9000/graphql";
 // config.HASURA_CONFIG = {
 //     uri: config.HASURA_GRAPHQL_ENDPOINT,
 //     headers: {

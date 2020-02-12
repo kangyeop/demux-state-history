@@ -1,6 +1,8 @@
 import { HandlerVersion, Effect, Updater, BlockInfo } from "demux";
 import * as dotenv from "dotenv";
-import { resolvers } from "./InsertTrxHistory.resolvers";
+import { BUY_PRODUCT } from "./buyProduct.queries";
+import { Container } from "typedi";
+import Hasura from "../../../Hasura";
 dotenv.config({ path: __dirname + "/../../../../.env" });
 const contractAccount = process.env.CONTRACT;
 
@@ -12,6 +14,7 @@ const logUpdate = async (
 ): Promise<void> => {
     try {
         const data = payload.data;
+        const hasura = Container.get(Hasura);
         if (payload.receiver === contractAccount) {
             if (data.memo.includes(":")) {
                 const params = data.memo.split(":");
@@ -21,12 +24,15 @@ const logUpdate = async (
                     pay += data.quantity.split(" ")[0].split(".")[1];
                     const product_uuid = params[1];
                     const buyer_blockchain_account = data.from;
-                    const response = await resolvers.Mutation.InsertTrxHistory(
-                        blockchain_trx_id,
-                        pay,
-                        product_uuid,
-                        buyer_blockchain_account
-                    );
+                    const response = await hasura.mutate({
+                        mutation: BUY_PRODUCT,
+                        variables: {
+                            buyer_blockchain_account,
+                            product_uuid,
+                            pay,
+                            blockchain_trx_id
+                        }
+                    });
                     console.log(response);
                 }
             }
