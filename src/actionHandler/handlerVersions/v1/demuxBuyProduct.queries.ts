@@ -1,13 +1,13 @@
 import gql from "graphql-tag";
 
-export const BUY_PRODUCT = gql`
-    mutation buyProduct(
+export const DEMUX_BUY_PRODUCT = gql`
+    mutation demuxBuyProduct(
         $buyer_blockchain_account: String!
         $product_uuid: String!
         $pay: String!
         $blockchain_trx_id: String!
     ) {
-        BuyProduct(
+        DemuxBuyProduct(
             buyer_blockchain_account: $buyer_blockchain_account
             product_uuid: $product_uuid
             pay: $pay

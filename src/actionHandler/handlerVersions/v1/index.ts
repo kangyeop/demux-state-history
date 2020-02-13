@@ -1,6 +1,6 @@
 import { HandlerVersion, Effect, Updater, BlockInfo } from "demux";
 import * as dotenv from "dotenv";
-import { BUY_PRODUCT } from "./buyProduct.queries";
+import { DEMUX_BUY_PRODUCT } from "./demuxBuyProduct.queries";
 import { Container } from "typedi";
 import Hasura from "../../../Hasura";
 dotenv.config({ path: __dirname + "/../../../../.env" });
@@ -25,7 +25,7 @@ const logUpdate = async (
                     const product_uuid = params[1];
                     const buyer_blockchain_account = data.from;
                     const response = await hasura.mutate({
-                        mutation: BUY_PRODUCT,
+                        mutation: DEMUX_BUY_PRODUCT,
                         variables: {
                             buyer_blockchain_account,
                             product_uuid,
