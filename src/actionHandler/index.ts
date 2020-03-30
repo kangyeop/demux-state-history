@@ -18,14 +18,24 @@ export default class ObjectActionHandler extends AbstractActionHandler {
         super(handlerVersions);
     }
 
+    public isInitialized: boolean = false;
+
     private hashHistory: { [key: number]: string } = { 0: "" };
+
+    public async handleBlock(
+        nextBlock: NextBlock,
+        isReplay: boolean
+    ): Promise<number | null> {
+        const { blockNumber, blockHash } = nextBlock.block.blockInfo;
+        this.hashHistory[blockNumber] = blockHash;
+        return super.handleBlock(nextBlock, isReplay);
+    }
 
     public async handleWithState(handle: (state: any, context?: any) => void) {
         const ACTION_LOG: boolean =
             (process.env.ACTION_LOG || "true") === "true" ? true : false;
 
         await handle(state, ACTION_LOG);
-
         // console.log(state);
 
         console.log(`
