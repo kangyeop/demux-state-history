@@ -1,7 +1,7 @@
 apps:
     - name: "demux"
       script: ./dist/index.js
-      instances: 0
+      instances: 1
       exec_mode: cluster
       autorestart: true
       watch: false

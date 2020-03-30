@@ -1,9 +1,5 @@
-import {
-    AbstractActionHandler,
-    HandlerVersion,
-    IndexState,
-    NextBlock
-} from "demux";
+import { IndexState } from "demux";
+import { AbstractActionHandler, HandlerVersion, NextBlock } from "demux";
 
 // Initial state
 let state = {
@@ -22,15 +18,19 @@ export default class ObjectActionHandler extends AbstractActionHandler {
         super(handlerVersions);
     }
 
+    private hashHistory: { [key: number]: string } = { 0: "" };
+
     public async handleWithState(handle: (state: any, context?: any) => void) {
         const ACTION_LOG: boolean =
             (process.env.ACTION_LOG || "true") === "true" ? true : false;
 
         await handle(state, ACTION_LOG);
 
-        console.log(` 
-      blockNum:   ${state.indexState.blockNumber}
-      trxNum:     ${state.trxNum}`);
+        // console.log(state);
+
+        console.log(`
+          blockNum:   ${state.indexState.blockNumber}
+          trxNum:     ${state.trxNum}`);
     }
 
     protected async updateIndexState(
@@ -44,6 +44,8 @@ export default class ObjectActionHandler extends AbstractActionHandler {
         state.indexState.blockHash = nextBlock.block.blockInfo.blockHash;
         state.indexState.isReplay = isReplay;
         state.indexState.handlerVersionName = handlerVersionName;
+        state.indexState.lastIrreversibleBlockNumber =
+            nextBlock.lastIrreversibleBlockNumber;
 
         const { actions } = nextBlock.block;
         const trx: Set<string> = new Set<string>();
@@ -59,14 +61,20 @@ export default class ObjectActionHandler extends AbstractActionHandler {
     }
 
     async rollbackTo(blockNumber: number) {
-        // const latestBlockNumber = state.blockNumber;
-        // const toDelete = [...Array(latestBlockNumber - blockNumber).keys()].map(
-        //     n => n + blockNumber + 1
-        // );
-        // for (const n of toDelete) {
-        //     delete stateHistory[n];
-        // }
-        // state = stateHistory[blockNumber];
+        console.log(blockNumber);
+        this.setLastProcessedBlockNumber(blockNumber);
+        this.setLastProcessedBlockHash(this.hashHistory[blockNumber]);
+        state.indexState.blockHash = this.hashHistory[blockNumber];
+    }
+
+    public setLastProcessedBlockHash(hash: string) {
+        this.lastProcessedBlockHash = hash;
+        state.indexState.blockHash = hash;
+    }
+
+    public setLastProcessedBlockNumber(num: number) {
+        this.lastProcessedBlockNumber = num;
+        state.indexState.blockNumber = num;
     }
 
     public async setup() {}
