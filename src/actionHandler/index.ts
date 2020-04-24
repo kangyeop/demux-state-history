@@ -1,5 +1,6 @@
 import { IndexState } from "demux";
 import { AbstractActionHandler, HandlerVersion, NextBlock } from "demux";
+import { logger } from "../utils";
 
 // Initial state
 let state = {
@@ -36,13 +37,10 @@ export default class ObjectActionHandler extends AbstractActionHandler {
             (process.env.ACTION_LOG || "true") === "true" ? true : false;
 
         await handle(state, ACTION_LOG);
-        // console.log(state);
 
-        if (state.indexState.blockNumber % 2) {
-            console.log(`
+        logger.info(`
         blockNum:   ${state.indexState.blockNumber}
         trxNum:     ${state.trxNum}`);
-        }
     }
 
     protected async updateIndexState(
