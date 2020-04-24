@@ -26,7 +26,7 @@ const actionHandler = new ObjectActionHandler([handlerVersion]);
 
 const actionReaderOpts: StateHistoryPostgresActionReaderOptions = {
     startAtBlock: 0,
-    onlyIrreversible: false,
+    onlyIrreversible: true,
     ledEndpoint: config.LEDGIS_ENDPOINT,
     dbSchema: config.DB_SCHEMA,
     massiveConfig
