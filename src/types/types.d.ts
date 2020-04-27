@@ -1,5 +1,4 @@
 import { IndexState, ActionReaderOptions } from "demux";
-import { PresetConfig } from "apollo-boost";
 
 export interface transferState {
     from: string;
@@ -23,12 +22,6 @@ export interface StateHistoryWsActionReaderOptions extends ActionReaderOptions {
 }
 
 export interface IOptions {
-    HASURA_GRAPHQL_HOST: string;
-    HASURA_GRAPHQL_PORT: string | number;
-    HASURA_GRAPHQL_VERSION: string;
-    HASURA_GRAPHQL_ADMIN_SECRET: string;
-    HASURA_GRAPHQL_ENDPOINT: string;
-    HASURA_CONFIG?: PresetConfig;
     GRAPHQL_ROUTE: string;
     LEDGIS_ENDPOINT: string;
     DB_HOST: string;

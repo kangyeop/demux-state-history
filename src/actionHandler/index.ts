@@ -38,9 +38,10 @@ export default class ObjectActionHandler extends AbstractActionHandler {
 
         await handle(state, ACTION_LOG);
 
-        logger.info(`
-        blockNum:   ${state.indexState.blockNumber}
-        trxNum:     ${state.trxNum}`);
+        logger.info(
+            `blockNum:   ${state.indexState.blockNumber} 
+            trxNum:     ${state.trxNum}`
+        );
     }
 
     protected async updateIndexState(

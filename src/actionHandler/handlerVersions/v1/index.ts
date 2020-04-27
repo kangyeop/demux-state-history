@@ -1,55 +1,82 @@
 import { HandlerVersion, Effect, Updater, BlockInfo } from "demux";
 import * as dotenv from "dotenv";
-import { DEMUX_BUY_PRODUCT } from "./demuxBuyProduct.queries";
-import { Container } from "typedi";
-import Hasura from "../../../Hasura";
+import { logger } from "../../../utils";
 dotenv.config({ path: __dirname + "/../../../../.env" });
 const contractAccount = process.env.CONTRACT;
+const actionContract = process.env.ACTION_CONTRACT;
 
-const logUpdate = async (
+interface donatePharm {
+    owner: string;
+    donateId: string;
+    point: string;
+    memo: string;
+}
+
+const donate = async (
     state: any,
     payload: any,
     block: BlockInfo,
     context: any
 ): Promise<void> => {
     try {
-        const data = payload.data;
-        const hasura = Container.get(Hasura);
         if (payload.receiver === contractAccount) {
-            if (data.memo.includes(":")) {
-                const params = data.memo.split(":");
-                if (params[0] === "buycad") {
-                    const blockchain_trx_id = payload.transactionId;
-                    let pay = data.quantity.split(" ")[0].split(".")[0];
-                    pay += data.quantity.split(" ")[0].split(".")[1];
-                    const product_uuid = params[1];
-                    const buyer_blockchain_account = data.from;
-                    const response = await hasura.mutate({
-                        mutation: DEMUX_BUY_PRODUCT,
-                        variables: {
-                            buyer_blockchain_account,
-                            product_uuid,
-                            pay,
-                            blockchain_trx_id
-                        }
-                    });
-                    console.log(response);
-                }
-            }
+            const data: donatePharm = payload.data;
+            console.log("owner: ", data.owner);
+            console.log("donateId: ", data.donateId);
+            console.log("point: ", data.point);
+            console.log("memo: ", data.memo);
         }
     } catch (error) {
-        console.log(error);
+        throw Error(error);
+    }
+};
+
+const chargePoint = async (
+    state: any,
+    payload: any,
+    block: BlockInfo,
+    context: any
+): Promise<void> => {
+    try {
+        if (payload.receiver === contractAccount) {
+            const data = payload.data;
+        }
+    } catch (error) {
+        throw Error(error);
     }
 };
 
 const updaters: Updater[] = [
     {
-        actionType: "led.token::transfer",
-        apply: logUpdate
+        actionType: `${actionContract}::donate`,
+        apply: donate
+    },
+    {
+        actionType: `${actionContract}::chargepoint`,
+        apply: chargePoint
     }
 ];
 
-const effects: Effect[] = [];
+const donateLog = async (
+    payload: any,
+    blockInfo: BlockInfo,
+    context: any
+): Promise<void> => {
+    try {
+        if (payload.receiver === contractAccount) {
+            logger.info("donate :", blockInfo);
+        }
+    } catch (error) {
+        throw Error(error);
+    }
+};
+
+const effects: Effect[] = [
+    {
+        actionType: `${actionContract}::donate`,
+        run: donateLog
+    }
+];
 
 const handlerVersion: HandlerVersion = {
     versionName: "v1",

@@ -3,7 +3,6 @@ import ObjectActionHandler from "./actionHandler";
 import { StateHistoryPostgresActionReader } from "./StateHistoryPostgresActionReader";
 import { StateHistoryPostgresActionReaderOptions } from "./types/types";
 import { handlerVersion } from "./actionHandler/handlerVersions/v1";
-import { Container } from "typedi";
 import { config } from "./config";
 import "reflect-metadata";
 
@@ -14,13 +13,6 @@ const massiveConfig = {
     user: config.DB_USER,
     password: config.DB_PASSWD
 };
-
-Container.set([
-    {
-        id: "HASURA_CONFIG",
-        value: config.HASURA_CONFIG
-    }
-]);
 
 const actionHandler = new ObjectActionHandler([handlerVersion]);
 
