@@ -14,6 +14,22 @@ interface donatePharm {
     donateUid: string;
 }
 
+const numHex = (s: number) => {
+    let a = s.toString(16);
+    if (a.length % 2 > 0) {
+        a = "0" + a;
+    }
+    return a;
+};
+
+const strHex = (s: string) => {
+    let a = "";
+    for (let i = 0; i < s.length; i++) {
+        a = a + numHex(s.charCodeAt(i));
+    }
+    return a;
+};
+
 const setDonate = async (
     state: any,
     payload: any,
@@ -24,10 +40,10 @@ const setDonate = async (
         if (payload.receiver === contractAccount) {
             const data: donatePharm = payload.data;
             const server = Container.get(Server);
-            console.log(data);
+            const uid = BigInt(data.donateUid).toString(16);
             await server.mutate({
                 mutation: DEMUX_SET_DONATE,
-                variables: { donateUid: data.donateUid }
+                variables: { donateUid: uid }
             });
         }
     } catch (error) {
