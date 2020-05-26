@@ -24,6 +24,7 @@ const setDonate = async (
         if (payload.receiver === contractAccount) {
             const data: donatePharm = payload.data;
             const server = Container.get(Server);
+            console.log(data);
             await server.mutate({
                 mutation: DEMUX_SET_DONATE,
                 variables: { donateUid: data.donateUid }
