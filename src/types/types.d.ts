@@ -1,4 +1,5 @@
 import { IndexState, ActionReaderOptions } from "demux";
+import { PresetConfig } from "apollo-boost";
 
 export interface transferState {
     from: string;
@@ -24,6 +25,8 @@ export interface StateHistoryWsActionReaderOptions extends ActionReaderOptions {
 export interface IOptions {
     GRAPHQL_ROUTE: string;
     LEDGIS_ENDPOINT: string;
+    GRAPHQL_CONFIG?: PresetConfig;
+    GRAPHQL_ENDPOINT: string;
     DB_HOST: string;
     DB_PORT: string | number;
     DB_DATABASE: string;

@@ -4,6 +4,7 @@ import { StateHistoryPostgresActionReader } from "./StateHistoryPostgresActionRe
 import { StateHistoryPostgresActionReaderOptions } from "./types/types";
 import { handlerVersion } from "./actionHandler/handlerVersions/v1";
 import { config } from "./config";
+import { Container } from "typedi";
 import "reflect-metadata";
 
 const massiveConfig = {
@@ -13,6 +14,13 @@ const massiveConfig = {
     user: config.DB_USER,
     password: config.DB_PASSWD
 };
+
+Container.set([
+    {
+        id: "GRAPHQL_CONFIG",
+        value: config.GRAPHQL_CONFIG
+    }
+]);
 
 const actionHandler = new ObjectActionHandler([handlerVersion]);
 

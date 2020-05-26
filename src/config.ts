@@ -10,5 +10,10 @@ export const config: IOptions = {
     DB_DATABASE: process.env.DB_DATABASE || "postgres",
     DB_USER: process.env.DB_USER || "postgres",
     DB_PASSWD: process.env.DB_PASSWD || "1234",
-    DB_SCHEMA: process.env.DB_SCHEMA || "chain"
+    DB_SCHEMA: process.env.DB_SCHEMA || "chain",
+    GRAPHQL_ENDPOINT: process.env.GRAPHQL_ENDPOINT || "localhost:9000"
+};
+
+config.GRAPHQL_CONFIG = {
+    uri: `${config.GRAPHQL_ENDPOINT}/${config.GRAPHQL_ROUTE}`
 };
