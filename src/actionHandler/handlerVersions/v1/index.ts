@@ -41,10 +41,14 @@ const setDonate = async (
             const data: donatePharm = payload.data;
             const server = Container.get(Server);
             const uid = BigInt(data.donateUid).toString(16);
-            await server.mutate({
-                mutation: DEMUX_SET_DONATE,
-                variables: { donateUid: uid }
-            });
+            setTimeout(
+                () =>
+                    server.mutate({
+                        mutation: DEMUX_SET_DONATE,
+                        variables: { donateUid: uid }
+                    }),
+                2000
+            );
         }
     } catch (error) {
         throw Error(error);
